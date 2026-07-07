@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Withdraw Code - Bank Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
+      .key {
+        background-color: #16a34a;
+        color: white;
+        font-weight: bold;
+        font-size: 1.25rem;
+        padding: 1rem;
+        border-radius: 0.75rem;
+        border: 2px solid #15803d;
+        transition: all 0.2s ease-in-out;
+      }
+      .key:active {
+        background-color: #15803d;
+      }
+      .loader {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid #22c55e;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 1s linear infinite;
+        margin: 40px auto;
+      }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+
+  <body
+    class="min-h-screen flex flex-col justify-start items-center bg-white dark:bg-black text-gray-900 dark:text-white px-6 py-10"
+  >
+    <!-- Logo -->
+    <div
+      class="w-20 h-20 rounded-2xl bg-green-600 flex items-center justify-center mb-6 mt-6"
+    >
+      <i class="fa-solid fa-landmark text-white text-3xl"></i>
+    </div>
+
+    <!-- Title -->
+    <h1 class="text-xl font-bold mb-4 text-center">
+      Enter Your WITHDRAW CODE
+    </h1>
+
+    <!-- Input -->
+    <input
+      type="password"
+      id="codeInput"
+      maxlength="6"
+      class="w-full max-w-xs border border-green-600 rounded-lg p-3 text-center text-2xl tracking-widest bg-transparent focus:outline-none mb-6"
+      readonly
+    />
+
+    <!-- Keypad -->
+    <div class="grid grid-cols-3 gap-4 w-full max-w-xs">
+      <button class="key" onclick="appendNumber('1')">1</button>
+      <button class="key" onclick="appendNumber('2')">2</button>
+      <button class="key" onclick="appendNumber('3')">3</button>
+
+      <button class="key" onclick="appendNumber('4')">4</button>
+      <button class="key" onclick="appendNumber('5')">5</button>
+      <button class="key" onclick="appendNumber('6')">6</button>
+
+      <button class="key" onclick="appendNumber('7')">7</button>
+      <button class="key" onclick="appendNumber('8')">8</button>
+      <button class="key" onclick="appendNumber('9')">9</button>
+
+      <button class="key" onclick="deleteNumber()">&times;</button>
+      <button class="key" onclick="appendNumber('0')">0</button>
+      <button class="key" onclick="verifyCode()">
+        <i class="fa-solid fa-check"></i>
+      </button>
+    </div>
+
+    <!-- Buy Code Button -->
+    <button
+      class="mt-4 w-40 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-lg text-base transition"
+      onclick="window.location.href='buy.html'"
+    >
+      Buy Code
+    </button>
+
+    <!-- Loader Modal -->
+    <div
+      id="loaderOverlay"
+      class="hidden fixed inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center z-50"
+    >
+      <div class="loader"></div>
+      <p class="text-white mt-4 text-lg font-medium">Processing...</p>
+    </div>
+
+    <script>
+      const input = document.getElementById("codeInput");
+      const loaderOverlay = document.getElementById("loaderOverlay");
+      let correctCode = "";
+
+      // Fetch correct code from passcode.txt
+      fetch("passcode.txt")
+        .then((response) => response.text())
+        .then((text) => {
+          correctCode = text.trim();
+          console.log("Loaded code:", correctCode);
+        })
+        .catch((error) => {
+          console.error("Error loading passcode.txt:", error);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Unable to load withdrawal code file.",
+          });
+        });
+
+      function appendNumber(num) {
+        if (input.value.length < 6) input.value += num;
+      }
+
+      function deleteNumber() {
+        input.value = input.value.slice(0, -1);
+      }
+
+      function verifyCode() {
+        const entered = input.value;
+
+        if (entered.length < 6) {
+          Swal.fire({
+            icon: "warning",
+            title: "Incomplete Code",
+            text: "Please enter your full 6-digit code.",
+            confirmButtonColor: "#22c55e",
+          });
+          return;
+        }
+
+        loaderOverlay.classList.remove("hidden");
+
+        setTimeout(() => {
+          loaderOverlay.classList.add("hidden");
+
+          if (entered === correctCode) {
+            window.location.href = "success.html";
+          } else {
+            Swal.fire({
+              title: "Invalid Code",
+              text: "Your withdraw code is incorrect. Please buy a new code.",
+              icon: "error",
+              confirmButtonText: "Buy Code",
+              confirmButtonColor: "#22c55e",
+            }).then((r) => {
+              if (r.isConfirmed) {
+                window.location.href = "buy.html";
+              }
+            });
+          }
+        }, 6000);
+      }
+    </script>
+  </body>
+</html>

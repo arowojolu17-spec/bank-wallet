@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bank Wallet Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          color-scheme: light;
+        }
+      }
+    </style>
+  </head>
+
+  <body
+    class="min-h-screen flex flex-col justify-between items-center bg-white dark:bg-black text-gray-900 dark:text-white px-6 py-8"
+  >
+    <!-- Wallet Card -->
+    <section
+      class="w-full max-w-sm bg-green-600 text-white rounded-3xl p-5 space-y-4 shadow-md"
+    >
+      <div class="flex justify-between items-center">
+        <h2 class="text-xl font-bold">Wallet Balance</h2>
+        <a
+          href="history.html"
+          class="text-sm underline hover:text-gray-200 transition"
+          >Transaction history ></a
+        >
+      </div>
+
+      <div id="walletBalance" class="text-5xl font-extrabold">₦0.00</div>
+
+      <div class="text-sm leading-relaxed">
+        <p>
+          NAME : <span id="userName" class="font-semibold">---</span>
+          &nbsp;&nbsp;
+          Account : <span id="userAccount" class="font-semibold">---</span>
+        </p>
+        <p>Current miner : <span class="font-semibold">Free Miner</span></p>
+      </div>
+
+      <!-- Buy Miner -->
+      <div class="flex items-center mt-4 space-x-2">
+        <button
+          id="buyMinerBtn"
+          class="flex-grow bg-black text-white py-3 font-bold rounded-xl hover:bg-gray-800 transition"
+        >
+          BUY MINER
+        </button>
+        <button
+          class="bg-black text-white py-3 px-4 rounded-xl hover:bg-gray-800 transition"
+          onclick="window.open('https://t.me/bankwalletofficial001', '_blank')"
+          title="Join us on Telegram"
+        >
+          <i class="fa-brands fa-telegram fa-bounce text-xl"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Action Buttons -->
+    <div class="w-full max-w-sm space-y-4 mt-10">
+      <button
+        id="mineBtn"
+        class="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition"
+      >
+        <i class="fa-solid fa-wallet text-lg"></i>
+        Mine
+      </button>
+
+      <button
+        id="withdrawBtn"
+        class="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition"
+      >
+        <i class="fa-solid fa-paper-plane text-lg"></i>
+        Withdraw
+      </button>
+
+      <!-- Learn More Button -->
+      <button
+        onclick="window.location.href='about.html'"
+        class="w-full flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition"
+      >
+        <i class="fa-solid fa-circle-info text-lg"></i>
+        Learn More
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-10">
+      <div
+        class="w-24 h-24 rounded-3xl bg-green-600 flex items-center justify-center"
+      >
+        <i class="fa-solid fa-landmark text-white text-5xl"></i>
+      </div>
+    </footer>
+
+    <!-- Sound -->
+    <audio id="successSound" src="success.mp3" preload="auto"></audio>
+
+    <script>
+      const walletBalance = document.getElementById("walletBalance");
+      const mineBtn = document.getElementById("mineBtn");
+      const withdrawBtn = document.getElementById("withdrawBtn");
+      const buyMinerBtn = document.getElementById("buyMinerBtn");
+      const successSound = document.getElementById("successSound");
+
+      const userData = JSON.parse(localStorage.getItem("bankWalletUser"));
+      if (userData) {
+        document.getElementById("userName").textContent = userData.name;
+        document.getElementById("userAccount").textContent =
+          userData.accountNumber;
+      }
+
+      let balance = parseFloat(localStorage.getItem("walletBalance")) || 0;
+      updateBalance();
+
+      function updateBalance() {
+        walletBalance.textContent =
+          "₦" + balance.toLocaleString("en-NG", { minimumFractionDigits: 2 });
+      }
+
+      window.addEventListener("focus", () => {
+        balance = parseFloat(localStorage.getItem("walletBalance")) || 0;
+        updateBalance();
+      });
+
+      mineBtn.addEventListener("click", () => {
+        if (balance >= 96000) {
+          Swal.fire({
+            icon: "info",
+            title: "Mining Limit Reached",
+            text: "You have already mined ₦96,000. Upgrade your plan to continue.",
+            confirmButtonColor: "#22c55e",
+          });
+          return;
+        }
+
+        Swal.fire({
+          title: "🏆 Welcome new user",
+          html: `
+            <p class="text-gray-700 dark:text-gray-200 text-sm mt-2">
+              Hello dear user, your current plan is set on free miner, 
+              so you can only mine <b>₦96,000.00</b> daily. <br><br>
+              Are you sure you want to start miner?
+            </p>
+          `,
+          showCancelButton: true,
+          confirmButtonText: "START MINING",
+          cancelButtonText: "Cancel",
+          confirmButtonColor: "#22c55e",
+          reverseButtons: true,
+        }).then((result) => {
+          if (result.isConfirmed) startMining();
+        });
+      });
+
+      withdrawBtn.addEventListener("click", () => {
+        window.location.href = "withdraw.html";
+      });
+
+      buyMinerBtn.addEventListener("click", () => {
+        window.location.href = "upgrade.html";
+      });
+
+      function startMining() {
+        let countdown = 10;
+        Swal.fire({
+          title: "⛏️ Mining in progress...",
+          html: `<b>${countdown}</b> seconds remaining`,
+          allowOutsideClick: false,
+          didOpen: () => {
+            const b = Swal.getHtmlContainer().querySelector("b");
+            const timer = setInterval(() => {
+              countdown--;
+              b.textContent = countdown;
+              if (countdown <= 0) {
+                clearInterval(timer);
+                Swal.close();
+                completeMining();
+              }
+            }, 1000);
+          },
+        });
+      }
+
+      function completeMining() {
+        balance = 96000;
+        localStorage.setItem("walletBalance", balance);
+        updateBalance();
+
+        let transactions =
+          JSON.parse(localStorage.getItem("transactionHistory")) || [];
+        transactions.push({
+          type: "Mining",
+          amount: "₦96,000",
+          status: "Successful",
+          date: new Date().toLocaleString(),
+        });
+        localStorage.setItem(
+          "transactionHistory",
+          JSON.stringify(transactions)
+        );
+
+        Swal.fire({
+          icon: "success",
+          title: "🎉 Mining Successful!",
+          text: "You’ve successfully mined ₦96,000.00.",
+          confirmButtonColor: "#22c55e",
+        });
+
+        successSound.play().catch(() => {});
+      }
+
+      window.addEventListener("load", () => {
+        const hasSeenTelegramPopup =
+          localStorage.getItem("telegramPopupSeen");
+        if (!hasSeenTelegramPopup) {
+          Swal.fire({
+            title: "💬 Join Our Telegram Community!",
+            html: `
+              <p class="text-gray-700 dark:text-gray-200 text-sm mt-2">
+                Stay updated on bonuses, mining tips, and giveaways.<br><br>
+                <b>Join our Telegram channel now!</b>
+              </p>
+            `,
+            showCancelButton: true,
+            confirmButtonText: "Join Now",
+            cancelButtonText: "Later",
+            confirmButtonColor: "#22c55e",
+            cancelButtonColor: "#6b7280",
+          }).then((result) => {
+            localStorage.setItem("telegramPopupSeen", "true");
+            if (result.isConfirmed) {
+              window.open("https://t.me/bankwalletofficial001", "_blank");
+            }
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
